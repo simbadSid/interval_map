@@ -25,6 +25,22 @@ public:
     void assign(K const& keyBegin, K const& keyEnd, V_forward&& val)
     requires (std::is_same<std::remove_cvref_t<V_forward>, V>::value)
     {
+        // Check if key type K meets the requirements
+        static_assert(std::is_copy_constructible<K>::value, "Key type K must be copy constructible.");
+        static_assert(std::is_move_constructible<K>::value, "Key type K must be move constructible.");
+        static_assert(std::is_copy_assignable<K>::value, "Key type K must be copy assignable.");
+        static_assert(std::is_move_assignable<K>::value, "Key type K must be move assignable.");
+        static_assert(std::is_same<decltype(std::declval<K>() < std::declval<K>()), bool>::value,
+                      "Key type K must support less-than comparison via operator<.");
+
+        // Check if value type V meets the requirements
+        static_assert(std::is_copy_constructible<V>::value, "Value type V must be copy constructible.");
+        static_assert(std::is_move_constructible<V>::value, "Value type V must be move constructible.");
+        static_assert(std::is_copy_assignable<V>::value, "Value type V must be copy assignable.");
+        static_assert(std::is_move_assignable<V>::value, "Value type V must be move assignable.");
+        static_assert(std::is_same<decltype(std::declval<V>() == std::declval<V>()), bool>::value,
+                      "Value type V must support equality comparison via operator==.");
+
         if (keyBegin >= keyEnd)
         {
             return; // Empty interval, do nothing
