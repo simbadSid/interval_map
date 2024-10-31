@@ -51,7 +51,7 @@ set(                        EXEC                                main)
 set(                        EXEC_DEBUG                          main_debug)
 set(                        EXEC_VALGRIND                       main_valgrind)
 
-set(                        CMAKE_CXX_FLAGS                     "-O3 -Wall -g") #-Werror -Wextra
+set(                        CMAKE_CXX_FLAGS                     "-Wall -g") #-O3  -Werror -Wextra
 SET(                        FLAG_PROD                           "")
 SET(                        FLAG_VERBOSE                        "-DLOG")
 SET(                        FLAG_TEST                           "-DTEST -DLOG") # TODO pb: only the first flag is considered
@@ -147,13 +147,19 @@ foreach(testKind ${TEST_KIND})
             message(STATUS "\t\tTest exec: \"${execTest}\"")
             get_filename_component(testName ${testKind}/${execTest} NAME_WE)
             file(GLOB_RECURSE inputFileList ${DIR_TEST_INPUT}/${testKind}/*${EXTENSION_TEST_INPUT})
+            if (NOT inputFileList)
+                set(inputFileList "_")
+                set(noInputFile True)
+            endif()
 
             foreach(inputFile ${inputFileList})
                 get_filename_component(inputName ${inputFile} NAME_WE)
                 set(outputFile ${DIR_TEST_OUTPUT}/${testKind}/${inputName}${EXTENSION_TEST_OUTPUT})
 
-                file(RELATIVE_PATH inputFileRelative  ${CMAKE_SOURCE_DIR} ${inputFile})
-                file(RELATIVE_PATH outputFileRelative ${CMAKE_SOURCE_DIR} ${outputFile})
+                if (NOT noInputFile)
+                    file(RELATIVE_PATH inputFileRelative  ${CMAKE_SOURCE_DIR} ${inputFile})
+                    file(RELATIVE_PATH outputFileRelative ${CMAKE_SOURCE_DIR} ${outputFile})
+                endif()
 
                 set(FLAG_INPUT  "-DTEST_INPUT_FILE=\"${inputFileRelative}\"")
                 set(FLAG_OUTPUT "-DTEST_OUTPUT_FILE=\"${outputFileRelative}\"")
@@ -168,8 +174,6 @@ foreach(testKind ${TEST_KIND})
                 else()
                     add_test(NAME ${execName} COMMAND ${execName})
                 endif()
-
-
             endforeach()
         endforeach()
     endif()

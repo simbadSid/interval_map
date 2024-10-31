@@ -1,35 +1,48 @@
 #ifndef TEST_SHARED_ROUTINE_H
 #define TEST_SHARED_ROUTINE_H
 
-#include <list>
+#include <iostream>
+#include <string>
 
-#include "s_max.h"
+#include "interval_map.h"
 
 
-int shared_main()
+class TestResult
 {
-    std::cout << "Begin Test using input file \"" << TEST_INPUT_FILE << "\" and output file \"" << TEST_OUTPUT_FILE << "\"" << std::endl;
+public:
+    bool        success;
+    std::string message;
 
-    auto *s_max = new S_max();
-    s_max->parse_input(TEST_INPUT_FILE);
-    auto result = s_max->find_max();
-    delete s_max;
+    TestResult(bool success, const std::string& message): success(success), message(message)
+    {}
+};
 
-    auto *fileParser = new FileParser(TEST_OUTPUT_FILE);
-    std::list<std::string> line = fileParser->nextLine();
-    auto expected_result = STRING_TO_DATA_TYPE(line.front());
-    delete fileParser;
 
-    if (result == expected_result)
+class Test
+{
+public:
+    // Method to be overridden by derived classes
+    virtual TestResult scenario() = 0;
+
+    // Method to run the test and report results
+    int shared_main()
     {
-        std::cout << "Test succeeded with result: " << result << std::endl;
-        return 0;
-    }
-    else
-    {
-        std::cout << "Test failed. Expected result: " << expected_result << ", got result: " << result << std::endl;
-        return -1;
-    }
-}
+        std::cout << "Begin Test: \"" << __FILE__ << "\"" << std::endl;
 
-#endif //TEST_SHARED_ROUTINE_H
+        // Run the scenario and get the result
+        TestResult result = this->scenario();
+
+        if (result.success)
+        {
+            std::cout << "Test \"" << __FILE__ << "\" succeeded: " << result.message << std::endl;
+            return 0;
+        }
+        else
+        {
+            std::cout << "Test \"" << __FILE__ << "\" failed: " << result.message << std::endl;
+            return -1;
+        }
+    }
+};
+
+#endif
