@@ -35,13 +35,15 @@ public:
 
         bool removeInterval = true;
         V pastValue;
+        auto map_begin = m_map.begin();
+        auto map_end = m_map.end();
 
         // Check if we need to adjust itLow to merge with an existing interval
-        if (itLow != m_map.begin())
+        if (itLow != map_begin)
         {
             --itLow; // Move to the previous element
             pastValue = itLow->second;
-            if (itLow->second == val)
+            if (pastValue == val)
             {
                 // The value at keyBegin matches the new value, no need to insert keyBegin
                 ++itLow;
@@ -56,7 +58,7 @@ public:
         }
 
         // Handle the case where we might want to merge with the end interval
-        if (itHigh != m_map.begin())
+        if (itHigh != map_begin)
         {
             --itHigh;
             if (itHigh->second == val)
@@ -75,15 +77,16 @@ public:
         {
             m_map.erase(itLow, itHigh);
             // Insert the new interval
-            m_map[keyBegin] = val;
+            m_map[keyBegin] = std::forward<V_forward>(val);
         }
 
         // Insert the original value at keyEnd if necessary
-        if (itHigh != m_map.end() && itHigh->first > keyEnd)
+        auto first = itHigh->first;
+        if (itHigh != map_end && first > keyEnd)
         {
             m_map[keyEnd] = pastValue; // Set the next value at keyEnd
         }
-        else if (itHigh == m_map.end() || itHigh->first != keyEnd)
+        else if (itHigh == map_end || first != keyEnd)
         {
             // If itHigh is at the end or not exactly at keyEnd, we insert the default value
             m_map[keyEnd] = m_valBegin; // Insert m_valBegin for the gap at keyEnd
